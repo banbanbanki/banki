@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hall Merch Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-28">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="https://i.imgur.com/5GT8cBM.jpg" alt="Hall Logo" class="h-10 w-auto object-contain">
+        <span class="font-bold text-slate-800 text-sm md:text-base">AY26/27 Merch</span>
+      </div>
+      <div id="cart-badge" class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold px-3 py-1.5 rounded-full text-sm">
+        0 items • $0.00
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Catalog -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h2 class="text-lg font-bold text-slate-800 mb-4">Available Merchandise</h2>
+    <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <!-- Dynamic Products Injected by JS -->
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Checkout Bar -->
+  <footer id="bottom-bar" class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-4 shadow-lg z-20">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div>
+        <span class="text-xs text-slate-400 block uppercase tracking-wider font-semibold">Total Amount</span>
+        <span id="bottom-total" class="text-2xl font-black text-slate-900">$0.00</span>
+      </div>
+      <button id="open-modal-btn" onclick="openCheckoutModal()" disabled class="bg-indigo-600 disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition">
+        Proceed to Checkout
+      </button>
+    </div>
+  </footer>
+
+  <!-- Checkout & Payment Modal -->
+  <div id="checkout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+      <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+        <h3 class="text-lg font-bold text-slate-900">Complete Your Order</h3>
+        <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-semibold leading-none">&times;</button>
+      </div>
+
+      <form id="order-form" onsubmit="handleFormSubmit(event)" class="space-y-4 mt-4">
+        <!-- Order Items Summary -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-sm">
+          <div class="font-semibold text-slate-700 mb-1">Order Summary</div>
+          <div id="modal-summary-items" class="text-slate-600 space-y-1"></div>
+          <div class="border-t border-slate-200 mt-2 pt-2 flex justify-between font-bold text-slate-900">
+            <span>Total Payable:</span>
+            <span id="modal-summary-total">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Resident Details -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Full Name</label>
+          <input required type="text" id="res-name" placeholder="Tan Wei Ming" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Room / Unit</label>
+            <input required type="text" id="res-room" placeholder="Blk 12, #04-102" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Telegram Handle</label>
+            <input required type="text" id="res-tele" placeholder="@weiming" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mobile Contact</label>
+          <input required type="tel" id="res-phone" placeholder="91234567" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <!-- Payment Instructions -->
+        <div class="border-t border-slate-100 pt-4">
+          <div class="text-sm font-semibold text-slate-800 mb-2">Step 1: Pay via PayNow</div>
+          <div class="flex flex-col items-center bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=UEN-PAYNOW-HALL" alt="PayNow QR" class="w-40 h-40 rounded-lg shadow-sm border border-slate-200 bg-white p-2">
+            <p class="text-xs text-slate-600 mt-2 font-medium">UEN: <span class="font-mono font-bold text-slate-900">T12LL0000X</span></p>
+            <p class="text-xs text-slate-500 mt-0.5">Reference: <span id="payment-reference" class="font-mono font-bold text-indigo-700">MERCH-ROOM</span></p>
+          </div>
+        </div>
+
+        <!-- Payment Proof Upload -->
+        <div>
+          <div class="text-sm font-semibold text-slate-800 mb-1">Step 2: Upload Payment Screenshot</div>
+          <input required type="file" id="res-proof" accept="image/*" onchange="previewImage(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+          <img id="proof-preview" class="mt-2 w-full h-32 object-contain bg-slate-100 rounded-lg border border-slate-200 hidden">
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-sm transition">
+          Confirm & Submit Order
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Screen Modal -->
+  <div id="success-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+      <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">✓</div>
+      <h3 class="text-lg font-bold text-slate-900">Order Received!</h3>
+      <p class="text-xs text-slate-500 mt-1">Order Ref: <span id="confirmed-order-id" class="font-mono font-bold text-slate-700"></span></p>
+      <p class="text-sm text-slate-600 mt-3">We have logged your order to our records. Our hall committee will verify your payment and notify you via Telegram when collection starts.</p>
+      <button onclick="window.location.reload()" class="mt-5 w-full bg-slate-900 text-white font-semibold py-2.5 rounded-xl text-sm hover:bg-slate-800">
+        Back to Store
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Merchandise Catalog Configuration
+    const CATALOG = [
+      {
+        id: "tee",
+        name: "Hall Resident Tee",
+        price: 16.00,
+        hasSize: true,
+        desc: "100% heavy cotton, oversized fit",
+        img: "https://i.imgur.com/yWTnm34.jpg",
+        stocks: { "XS": 0, "S": 0, "M": 0, "L": 0, "XL": 0, "2XL": 0 }
+      },
+      {
+        id: "hoodie",
+        name: "Hall Pullover Hoodie",
+        price: 28.00,
+        hasSize: true,
+        desc: "Embroidered chest logo, fleece lined",
+        img: "https://i.imgur.com/yWTnm34.jpg",
+        stocks: { "S": 0, "M": 0, "L": 0, "XL": 0 }
+      },
+      {
+        id: "lanyard",
+        name: "Hall Woven Lanyard",
+        price: 5.00,
+        hasSize: false,
+        desc: "Quick-release buckle with cardholder",
+        img: "https://placehold.co/400x300/e2e8f0/475569?text=Lanyard",
+        stocks: { "Free Size": 0 }
+      },
+      {
+        id: "totebag",
+        name: "Canvas Tote Bag",
+        price: 8.00,
+        hasSize: false,
+        desc: "Inner pocket, holds 15-inch laptops",
+        img: "https://placehold.co/400x300/e2e8f0/475569?text=Tote+Bag",
+        stocks: { "Free Size": 0 }
+      }
+    ];
+
+    const cart = {};
+    const GET_STOCK_URL = "https://default15ce9348be2a462b8fc0e1765a9b20.4a.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/06/workflows/2e7f68e486ed49089776e2a4f85a060c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6d-2YZse9YYLG2SBEzyduMA6c8QsLRFCbQlz-qN3hm4";
+
+    async function syncStockFromExcel() {
+      try {
+        const res = await fetch(GET_STOCK_URL);
+        if (!res.ok) throw new Error("Could not reach inventory endpoint");
+        
+        const data = await res.json();
+        // In Power Automate, rows are returned in the "value" property
+        const rows = data.value || data;
+
+        rows.forEach(row => {
+          if (!row.SKU) return;
+          const [itemId, size] = row.SKU.split("-");
+          const item = CATALOG.find(p => p.id === itemId);
+          if (item && item.stocks && item.stocks[size] !== undefined) {
+            item.stocks[size] = Number(row.Remaining_Stock) || 0;
+          }
+        });
+
+        // Re-draw cards with the live counts from Excel
+        renderCatalog();
+      } catch (err) {
+        console.warn("Stock sync failed, displaying offline fallback:", err);
+        renderCatalog();
+      }
+    }
+
+    // Helper functions for stock
+    function getAvailableStock(itemId, size) {
+      const item = CATALOG.find(p => p.id === itemId);
+      return item && item.stocks[size] !== undefined ? item.stocks[size] : 0;
+    }
+
+    function renderStockBadge(stock) {
+      if (stock === 0) {
+        return `<span class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full font-bold">Sold Out</span>`;
+      } else if (stock <= 5) {
+        return `<span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium">Only ${stock} left</span>`;
+      } else {
+        return `<span class="text-slate-400 text-xs">${stock} in stock</span>`;
+      }
+    }
+
+    // 2. Render Product Cards Function
+    function renderCatalog() {
+      const grid = document.getElementById("catalog-grid");
+      grid.innerHTML = ""; // Clear existing cards before re-rendering
+
+      CATALOG.forEach(item => {
+        const defaultSize = item.hasSize ? Object.keys(item.stocks)[0] : "Free Size";
+        const initialStock = getAvailableStock(item.id, defaultSize);
+
+        const card = document.createElement("div");
+        card.className = "bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between";
+        card.innerHTML = `
+          <div>
+            <img src="${item.img}" alt="${item.name}" class="w-full aspect-square object-cover bg-slate-100">
+            <div class="p-4">
+              <div class="flex justify-between items-start">
+                <h3 class="font-bold text-slate-900">${item.name}</h3>
+                <span class="font-bold text-slate-900">$${item.price.toFixed(2)}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">${item.desc}</p>
+            </div>
+          </div>
+
+          <div class="p-4 pt-0">
+            <div class="mb-3">
+              <div class="flex justify-between items-center mb-1">
+                <label class="text-xs font-semibold text-slate-500 uppercase">${item.hasSize ? 'Select Size' : 'Stock'}</label>
+                <div id="stock-badge-${item.id}">
+                  ${renderStockBadge(initialStock)}
+                </div>
+              </div>
+
+              ${item.hasSize ? `
+                <select id="size-${item.id}" onchange="handleSizeChange('${item.id}')" class="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium">
+                  ${Object.keys(item.stocks).map(s => {
+                    const sStock = item.stocks[s];
+                    const label = sStock === 0 ? `${s} (Sold Out)` : `${s} (${sStock} available)`;
+                    return `<option value="${s}">${label}</option>`;
+                  }).join("")}
+                </select>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="dec-btn-${item.id}" onclick="updateCart('${item.id}', -1)" class="w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">-</button>
+              <span id="qty-${item.id}" class="flex-1 text-center font-bold text-sm text-slate-800">0</span>
+              <button id="inc-btn-${item.id}" onclick="updateCart('${item.id}', 1)" class="w-9 h-9 flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition">+</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+        refreshCardControls(item.id, defaultSize);
+      });
+    }
+
+    // Trigger stock sync on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      renderCatalog();       // Render initial cards immediately
+      syncStockFromExcel();  // Fetch latest stock counts from Excel in the background
+    });
+    // ─── LIVE STOCK SYNC (PASTE ENDS HERE) ───────────────────────────
+    // 3. Size Switcher
+    function handleSizeChange(itemId) {
+      const sizeEl = document.getElementById(`size-${itemId}`);
+      const selectedSize = sizeEl ? sizeEl.value : "Free Size";
+      refreshCardControls(itemId, selectedSize);
+    }
+
+    function refreshCardControls(itemId, size) {
+      const stock = getAvailableStock(itemId, size);
+      const key = `${itemId}-${size}`;
+      const currentCartQty = cart[key] ? cart[key].quantity : 0;
+
+      // Update badge
+      const badgeContainer = document.getElementById(`stock-badge-${itemId}`);
+      if (badgeContainer) badgeContainer.innerHTML = renderStockBadge(stock);
+
+      // Update quantity display
+      const qtyEl = document.getElementById(`qty-${itemId}`);
+      if (qtyEl) qtyEl.innerText = currentCartQty;
+
+      // Disable/enable + button based on remaining stock
+      const incBtn = document.getElementById(`inc-btn-${itemId}`);
+      if (incBtn) {
+        if (stock === 0 || currentCartQty >= stock) {
+          incBtn.disabled = true;
+          incBtn.className = "w-9 h-9 flex items-center justify-center bg-slate-100 text-slate-300 font-bold rounded-lg cursor-not-allowed";
+        } else {
+          incBtn.disabled = false;
+          incBtn.className = "w-9 h-9 flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition";
+        }
+      }
+    }
+
+    // 4. Cart Management with Max Stock Enforcement
+    function updateCart(itemId, delta) {
+      const item = CATALOG.find(p => p.id === itemId);
+      const sizeEl = document.getElementById(`size-${itemId}`);
+      const selectedSize = sizeEl ? sizeEl.value : "Free Size";
+      const key = `${itemId}-${selectedSize}`;
+      const stock = getAvailableStock(itemId, selectedSize);
+
+      if (!cart[key]) {
+        cart[key] = {
+          id: itemId,
+          sku: key,
+          name: item.name,
+          price: item.price,
+          size: selectedSize,
+          quantity: 0,
+          currentStock: stock
+        };
+      }
+
+      // Check boundaries
+      const newQty = cart[key].quantity + delta;
+      if (newQty > stock) {
+        alert(`Sorry, only ${stock} items available for size ${selectedSize}.`);
+        return;
+      }
+
+      cart[key].quantity = newQty;
+      if (cart[key].quantity <= 0) delete cart[key];
+
+      refreshCardControls(itemId, selectedSize);
+      recalculateTotals();
+    }
+
+    function recalculateTotals() {
+      let totalQty = 0;
+      let totalPrice = 0;
+
+      Object.values(cart).forEach(item => {
+        totalQty += item.quantity;
+        totalPrice += item.price * item.quantity;
+      });
+
+      const formatted = `$${totalPrice.toFixed(2)}`;
+      document.getElementById("cart-badge").innerText = `${totalQty} item${totalQty === 1 ? '' : 's'} • ${formatted}`;
+      document.getElementById("bottom-total").innerText = formatted;
+      document.getElementById("open-modal-btn").disabled = totalQty === 0;
+    }
+
+    // 5. Modal Handlers
+    function openCheckoutModal() {
+      const summaryList = document.getElementById("modal-summary-items");
+      summaryList.innerHTML = "";
+      let total = 0;
+
+      Object.values(cart).forEach(c => {
+        const lineTotal = c.price * c.quantity;
+        total += lineTotal;
+        const line = document.createElement("div");
+        line.className = "flex justify-between";
+        line.innerHTML = `<span>${c.quantity}x ${c.name} (${c.size})</span><span>$${lineTotal.toFixed(2)}</span>`;
+        summaryList.appendChild(line);
+      });
+
+      document.getElementById("modal-summary-total").innerText = `$${total.toFixed(2)}`;
+
+      const roomInput = document.getElementById("res-room");
+      const refLabel = document.getElementById("payment-reference");
+      roomInput.oninput = () => {
+        refLabel.innerText = roomInput.value.trim() ? `MERCH-${roomInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}` : "MERCH-ROOM";
+      };
+
+      document.getElementById("checkout-modal").classList.remove("hidden");
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById("checkout-modal").classList.add("hidden");
+    }
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById("proof-preview");
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove("hidden");
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // 6. Submit Order
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById("submit-btn");
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Submitting Order...";
+
+      const proofFile = document.getElementById("res-proof").files[0];
+      if (!proofFile) {
+        alert("Please attach your payment screenshot.");
+        submitBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const base64Data = await fileToBase64(proofFile);
+        const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+        const totalAmount = Object.values(cart).reduce((sum, c) => sum + (c.price * c.quantity), 0);
+        const itemsSummary = Object.values(cart).map(c => `${c.quantity}x ${c.name} (${c.size})`).join(", ");
+
+        const payload = {
+          orderId: orderId,
+          timestamp: new Date().toLocaleString("en-SG", { timeZone: "Asia/Singapore" }),
+          name: document.getElementById("res-name").value.trim(),
+          room: document.getElementById("res-room").value.trim(),
+          telegram: document.getElementById("res-tele").value.trim(),
+          phone: document.getElementById("res-phone").value.trim(),
+          itemsSummary: itemsSummary,
+          items: Object.values(cart).map(c => ({
+            sku: c.sku,
+            name: c.name,
+            size: c.size,
+            quantity: c.quantity,
+            currentStock: c.currentStock
+          })),
+          totalAmount: totalAmount,
+          fileName: `${orderId}_${proofFile.name}`,
+          fileBase64: base64Data
+        };
+
+        const WEBHOOK_URL = "https://default15ce9348be2a462b8fc0e1765a9b20.4a.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/02/workflows/c8c0da84652346de886d620ad479558b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ebUgotEAuITZ0dVNr8OJ7QhAmLnuVc6J2n9EAwJ6jNE"
+        const response = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Microsoft Error:", errorText);
+            alert("MICROSOFT REJECTED ORDER (400):\n\n" + errorText);
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Confirm & Submit Order";
+            return;
+        }
+
+        closeCheckoutModal();
+        document.getElementById("confirmed-order-id").innerText = orderId;
+        document.getElementById("success-modal").classList.remove("hidden");
+      } catch (err) {
+        console.error(err);
+        alert("Order submission failed. Please verify your connection or contact the hall admin.");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Confirm & Submit Order";
+      }
+    }
+  </script>
+</body>
+</html>
