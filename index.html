@@ -12,7 +12,7 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <img src="https://i.imgur.com/5GT8cBM.jpg" alt="Hall Logo" class="h-10 w-auto object-contain">
+        <img src="images/bankilogo.jpg" alt="Hall Logo" class="h-10 w-auto object-contain">
         <span class="font-bold text-slate-800 text-sm md:text-base">AY26/27 Merch</span>
       </div>
       <div id="cart-badge" class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold px-3 py-1.5 rounded-full text-sm">
@@ -126,21 +126,30 @@
     const CATALOG = [
       {
         id: "tee",
-        name: "Hall Resident Tee",
-        price: 16.00,
+        name: "25/26 Hall Resident Tee",
+        price: 12.00,
         hasSize: true,
-        desc: "100% heavy cotton, oversized fit",
-        img: "https://i.imgur.com/yWTnm34.jpg",
+        desc: "Dry-Fit",
+        img: "images/tee.jpg",
         stocks: { "XS": 0, "S": 0, "M": 0, "L": 0, "XL": 0, "2XL": 0 }
       },
       {
-        id: "hoodie",
-        name: "Hall Pullover Hoodie",
-        price: 28.00,
+        id: "rsinglet",
+        name: "25/26 Banyan Round-Neck Singlet",
+        price: 12.00,
         hasSize: true,
-        desc: "Embroidered chest logo, fleece lined",
-        img: "https://i.imgur.com/yWTnm34.jpg",
-        stocks: { "S": 0, "M": 0, "L": 0, "XL": 0 }
+        desc: "Dry-Fit, Round Neck",
+        img: "images/rsinglet.jpeg",
+        stocks: { "XS": 0, "S": 0, "M": 0, "L": 0, "XL": 0, "2XL": 0 }
+      },
+      {
+        id: "vsinglet",
+        name: "25/26 Banyan V-Neck Singlet",
+        price: 12.00,
+        hasSize: true,
+        desc: "Dry-Fit, V Neck",
+        img: "images/vsinglet.jpeg",
+        stocks: { "XS": 0, "S": 0, "M": 0, "L": 0, "XL": 0, "2XL": 0 }
       },
       {
         id: "lanyard",
@@ -151,15 +160,6 @@
         img: "https://placehold.co/400x300/e2e8f0/475569?text=Lanyard",
         stocks: { "Free Size": 0 }
       },
-      {
-        id: "totebag",
-        name: "Canvas Tote Bag",
-        price: 8.00,
-        hasSize: false,
-        desc: "Inner pocket, holds 15-inch laptops",
-        img: "https://placehold.co/400x300/e2e8f0/475569?text=Tote+Bag",
-        stocks: { "Free Size": 0 }
-      }
     ];
 
     const cart = {};
