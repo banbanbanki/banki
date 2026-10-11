@@ -178,8 +178,16 @@
           if (!row.SKU) return;
           const [itemId, size] = row.SKU.split("-");
           const item = CATALOG.find(p => p.id === itemId);
-          if (item && item.stocks && item.stocks[size] !== undefined) {
-            item.stocks[size] = Number(row.Remaining_Stock) || 0;
+          if (item) {
+            // 1. Update live stock count
+            if (item.stocks && item.stocks[size] !== undefined) {
+              item.stocks[size] = Number(row.Remaining_Stock) || 0;
+            }
+
+            // 2. Update dynamic price from Excel
+            if (row.Price !== undefined && row.Price !== null && row.Price !== "") {
+              item.price = Number(row.Price);
+            }
           }
         });
 
