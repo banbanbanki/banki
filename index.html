@@ -136,6 +136,23 @@
     const GET_STOCK_URL = "https://default15ce9348be2a462b8fc0e1765a9b20.4a.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/06/workflows/2e7f68e486ed49089776e2a4f85a060c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6d-2YZse9YYLG2SBEzyduMA6c8QsLRFCbQlz-qN3hm4";
     const WEBHOOK_URL   = "https://default15ce9348be2a462b8fc0e1765a9b20.4a.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/02/workflows/c8c0da84652346de886d620ad479558b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ebUgotEAuITZ0dVNr8OJ7QhAmLnuVc6J2n9EAwJ6jNE";
 
+
+    // ─── BUNDLE PROMO CONFIGURATION ──────────────────────────────────
+    // Add as many independent item promotions as you want:
+    const BUNDLE_CONFIGS = {
+      "2ltee": {
+        bundleQty: 3,
+        bundlePrice: 40.00,
+        label: "Special Bundle: 3 for $40"
+      },
+      "26tee": {
+        bundleQty: 2,
+        bundlePrice: 22.00,
+        label: "Special Bundle: 3 for $30"
+      }
+      // Add another item ID here whenever needed
+    };
+
     // Dynamic State
     let CATALOG = [];
     const cart = {};
@@ -226,6 +243,60 @@
       }
     }
 
+    // ─── CART CALCULATION & BUNDLE PROMO ENGINE ──────────────────────
+    function getCartBreakdown() {
+      let subtotal = 0;
+      let totalQty = 0;
+      const discounts = [];
+
+      // 1. Subtotal for all items
+      Object.values(cart).forEach(item => {
+        subtotal += item.price * item.quantity;
+        totalQty += item.quantity;
+      });
+
+      // 2. Evaluate each independent bundle rule
+      Object.entries(BUNDLE_CONFIGS).forEach(([targetItemId, deal]) => {
+        const matchingUnits = [];
+
+        // Collect units strictly for this specific item
+        Object.values(cart).forEach(item => {
+          if (item.id === targetItemId) {
+            for (let i = 0; i < item.quantity; i++) {
+              matchingUnits.push(item.price);
+            }
+          }
+        });
+
+        const bundlesEarned = Math.floor(matchingUnits.length / deal.bundleQty);
+
+        if (bundlesEarned > 0) {
+          // Sort descending so greatest savings calculate accurately if sizes vary
+          matchingUnits.sort((a, b) => b - a);
+
+          let totalSavingForDeal = 0;
+          for (let b = 0; b < bundlesEarned; b++) {
+            const slice = matchingUnits.slice(b * deal.bundleQty, (b + 1) * deal.bundleQty);
+            const regularCost = slice.reduce((sum, p) => sum + p, 0);
+            const saving = regularCost - deal.bundlePrice;
+            if (saving > 0) totalSavingForDeal += saving;
+          }
+
+          if (totalSavingForDeal > 0) {
+            discounts.push({
+              label: `${deal.label} (${bundlesEarned}x applied)`,
+              amount: totalSavingForDeal
+            });
+          }
+        }
+      });
+
+      const totalDiscount = discounts.reduce((sum, d) => sum + d.amount, 0);
+      const finalTotal = Math.max(0, subtotal - totalDiscount);
+
+      return { subtotal, totalQty, discounts, totalDiscount, finalTotal };
+    }
+
     // 3. Render Catalog Cards
     function renderCatalog() {
       const grid = document.getElementById("catalog-grid");
@@ -248,7 +319,14 @@
             >
             <div class="p-4">
               <div class="flex justify-between items-start gap-2">
-                <h3 class="font-bold text-slate-900">${item.name}</h3>
+                <div>
+                  <h3 class="font-bold text-slate-900">${item.name}</h3>
+                  ${BUNDLE_CONFIGS[item.id] ? `
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">
+                    ${BUNDLE_CONFIGS[item.id].label}
+                  </span>
+                ` : ''}
+                </div>
                 <span id="price-display-${item.id}" class="font-bold text-slate-900 shrink-0">$${initialPrice.toFixed(2)}</span>
               </div>
               <p class="text-xs text-slate-500 mt-1">${item.desc}</p>
@@ -293,7 +371,6 @@
       const sizeEl = document.getElementById(`size-${itemId}`);
       const selectedSize = sizeEl ? sizeEl.value : "Free Size";
       
-      // Update displayed price if sizes have different prices
       const currentPrice = getItemPrice(itemId, selectedSize);
       const priceDisplay = document.getElementById(`price-display-${itemId}`);
       if (priceDisplay) priceDisplay.innerText = `$${currentPrice.toFixed(2)}`;
@@ -359,36 +436,54 @@
     }
 
     function recalculateTotals() {
-      let totalQty = 0;
-      let totalPrice = 0;
+      const { totalQty, finalTotal, totalDiscount } = getCartBreakdown();
+      const formatted = `$${finalTotal.toFixed(2)}`;
 
-      Object.values(cart).forEach(item => {
-        totalQty += item.quantity;
-        totalPrice += item.price * item.quantity;
-      });
-
-      const formatted = `$${totalPrice.toFixed(2)}`;
       document.getElementById("cart-badge").innerText = `${totalQty} item${totalQty === 1 ? '' : 's'} • ${formatted}`;
       document.getElementById("bottom-total").innerText = formatted;
       document.getElementById("open-modal-btn").disabled = totalQty === 0;
+
+      // Show bundle discount tag on sticky checkout bar if active
+      let discountBadge = document.getElementById("bottom-discount-tag");
+      if (totalDiscount > 0) {
+        if (!discountBadge) {
+          discountBadge = document.createElement("span");
+          discountBadge.id = "bottom-discount-tag";
+          discountBadge.className = "text-[11px] font-bold text-emerald-600 block";
+          document.getElementById("bottom-total").insertAdjacentElement("afterend", discountBadge);
+        }
+        discountBadge.innerText = `Saved $${totalDiscount.toFixed(2)} with bundle!`;
+      } else if (discountBadge) {
+        discountBadge.remove();
+      }
     }
 
     // 6. Checkout & Form Submission
     function openCheckoutModal() {
       const summaryList = document.getElementById("modal-summary-items");
       summaryList.innerHTML = "";
-      let total = 0;
 
+      const { discounts, finalTotal } = getCartBreakdown();
+
+      // 1. Regular items
       Object.values(cart).forEach(c => {
         const lineTotal = c.price * c.quantity;
-        total += lineTotal;
         const line = document.createElement("div");
         line.className = "flex justify-between";
         line.innerHTML = `<span>${c.quantity}x ${c.name} (${c.size})</span><span>$${lineTotal.toFixed(2)}</span>`;
         summaryList.appendChild(line);
       });
 
-      document.getElementById("modal-summary-total").innerText = `$${total.toFixed(2)}`;
+      // 2. Promotional discounts
+      discounts.forEach(d => {
+        const discLine = document.createElement("div");
+        discLine.className = "flex justify-between text-emerald-600 font-semibold";
+        discLine.innerHTML = `<span>⚡ ${d.label}</span><span>-$${d.amount.toFixed(2)}</span>`;
+        summaryList.appendChild(discLine);
+      });
+
+      // 3. Final total payable
+      document.getElementById("modal-summary-total").innerText = `$${finalTotal.toFixed(2)}`;
 
       const roomInput = document.getElementById("res-room");
       const refLabel = document.getElementById("payment-reference");
@@ -437,8 +532,15 @@
       try {
         const base64Data = await fileToBase64(proofFile);
         const orderId = `ORD-${Date.now().toString().slice(-6)}`;
-        const totalAmount = Object.values(cart).reduce((sum, c) => sum + (c.price * c.quantity), 0);
-        const itemsSummary = Object.values(cart).map(c => `${c.quantity}x ${c.name} (${c.size})`).join(", ");
+        
+        // Calculate discounted total for Power Automate and Excel
+        const { finalTotal, discounts } = getCartBreakdown();
+        const totalAmount = finalTotal;
+
+        let itemsSummary = Object.values(cart).map(c => `${c.quantity}x ${c.name} (${c.size})`).join(", ");
+        if (discounts.length > 0) {
+          itemsSummary += ` [Promo Applied: -${discounts.map(d => `$${d.amount.toFixed(2)}`).join(", ")}]`;
+        }
 
         const payload = {
           orderId: orderId,
