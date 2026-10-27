@@ -10,29 +10,34 @@
 
   <!-- Header -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <img src="images/bankilogo.jpg" onerror="this.src='images/logo.png'" alt="Hall Logo" class="h-10 w-auto object-contain">
+        <img src="images/bankilogo.jpg" alt="Hall Logo" class="h-10 w-auto object-contain">
         <span class="font-bold text-slate-800 text-sm md:text-base">BanBanBanKi Banyan Official Merch Store</span>
       </div>
-      <div id="cart-badge" class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold px-3 py-1.5 rounded-full text-sm">
-        0 items • $0.00
-      </div>
+      <!-- Clickable Cart Button -->
+      <button onclick="openCartDrawer()" class="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-semibold px-3.5 py-1.5 rounded-full text-sm transition">
+        <span>🛒</span>
+        <span id="cart-badge">0 items • $0.00</span>
+      </button>
     </div>
   </header>
 
   <!-- Product Catalog -->
   <main class="max-w-4xl mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-bold text-slate-800">Available Merchandise</h2>
-      <button onclick="fetchStoreCatalog()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1">
+    <div class="flex justify-between items-center mb-5">
+      <div>
+        <h2 class="text-xl font-black text-slate-900">Available Merchandise</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Select your size and add items to your cart.</p>
+      </div>
+      <button onclick="fetchStoreCatalog()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-xs transition">
         ↻ Refresh Stock
       </button>
     </div>
 
     <!-- Dynamic Products Grid -->
     <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-      <!-- Loading Skeleton (Replaced once Excel data arrives) -->
+      <!-- Loading Skeleton -->
       <div class="col-span-full py-16 text-center text-slate-400">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-3"></div>
         <p class="text-sm font-medium">Loading merchandise from inventory...</p>
@@ -40,24 +45,70 @@
     </div>
   </main>
 
-  <!-- Sticky Bottom Checkout Bar -->
-  <footer id="bottom-bar" class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-4 shadow-lg z-20">
+  <!-- Sticky Bottom Bar -->
+  <footer id="bottom-bar" class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-4 shadow-xl z-20 transition-transform duration-300">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       <div>
         <span class="text-xs text-slate-400 block uppercase tracking-wider font-semibold">Total Amount</span>
         <span id="bottom-total" class="text-2xl font-black text-slate-900">$0.00</span>
+        <span id="bottom-discount-tag" class="hidden text-[11px] font-bold text-emerald-600 block"></span>
       </div>
-      <button id="open-modal-btn" onclick="openCheckoutModal()" disabled class="bg-indigo-600 disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition">
-        Proceed to Checkout
+      <button id="open-cart-btn" onclick="openCartDrawer()" disabled class="bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2">
+        <span>View Cart & Checkout</span>
+        <span id="btn-cart-count" class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full font-mono">0</span>
       </button>
     </div>
   </footer>
 
-  <!-- Checkout & Payment Modal -->
+  <!-- ─── SLIDE-OVER CART DRAWER ─────────────────────────────────── -->
+  <div id="cart-drawer-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden transition-opacity" onclick="closeCartDrawer()"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+    <!-- Drawer Header -->
+    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">🛒</span>
+        <h3 class="font-bold text-slate-900 text-base">Your Shopping Cart</h3>
+        <span id="drawer-item-count" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <button onclick="closeCartDrawer()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold leading-none p-1">&times;</button>
+    </div>
+
+    <!-- Drawer Items List -->
+    <div id="drawer-items-list" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <!-- Injected by JavaScript -->
+    </div>
+
+    <!-- Drawer Footer / Summary -->
+    <div class="border-t border-slate-200 p-4 bg-slate-50 space-y-3">
+      <div class="space-y-1.5 text-xs">
+        <div class="flex justify-between text-slate-500">
+          <span>Subtotal</span>
+          <span id="drawer-subtotal" class="font-mono font-medium">$0.00</span>
+        </div>
+        <div id="drawer-discounts" class="space-y-1 text-emerald-600 font-medium"></div>
+        <div class="flex justify-between text-slate-900 font-bold text-base border-t border-slate-200 pt-2">
+          <span>Total Payable</span>
+          <span id="drawer-total" class="font-mono">$0.00</span>
+        </div>
+      </div>
+
+      <button id="drawer-checkout-btn" onclick="proceedToCheckoutFromCart()" class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-sm transition">
+        Proceed to Checkout
+      </button>
+      <button onclick="closeCartDrawer()" class="w-full text-center text-xs text-slate-500 hover:text-slate-700 font-medium">
+        Continue Shopping
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── CHECKOUT & PAYMENT MODAL ──────────────────────────────── -->
   <div id="checkout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
       <div class="flex justify-between items-center pb-4 border-b border-slate-100">
-        <h3 class="text-lg font-bold text-slate-900">Complete Your Order</h3>
+        <div class="flex items-center gap-2">
+          <button onclick="backToCartFromCheckout()" class="text-slate-400 hover:text-slate-700 text-xs font-semibold mr-1">← Edit Cart</button>
+          <h3 class="text-lg font-bold text-slate-900">Complete Your Order</h3>
+        </div>
         <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-semibold leading-none">&times;</button>
       </div>
 
@@ -65,8 +116,8 @@
         <!-- Order Items Summary -->
         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-sm">
           <div class="font-semibold text-slate-700 mb-1">Order Summary</div>
-          <div id="modal-summary-items" class="text-slate-600 space-y-1"></div>
-          <div class="border-t border-slate-200 mt-2 pt-2 flex justify-between font-bold text-slate-900">
+          <div id="modal-summary-items" class="text-slate-600 space-y-1 text-xs"></div>
+          <div class="border-t border-slate-200 mt-2 pt-2 flex justify-between font-bold text-slate-900 text-sm">
             <span>Total Payable:</span>
             <span id="modal-summary-total">$0.00</span>
           </div>
@@ -99,7 +150,7 @@
           <div class="text-sm font-semibold text-slate-800 mb-2">Step 1: Pay via PayNow</div>
           <div class="flex flex-col items-center bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
             <img src="images/paynow_clive.jpg" alt="PayNow QR" class="w-40 h-40 rounded-lg shadow-sm border border-slate-200 bg-white p-2">
-            <p class="text-xs text-slate-500 mt-0.5">Reference: <span id="payment-reference" class="font-mono font-bold text-indigo-700">MERCH-ROOM</span></p>
+            <p class="text-xs text-slate-500 mt-1">Reference: <span id="payment-reference" class="font-mono font-bold text-indigo-700">MERCH-ROOM</span></p>
           </div>
         </div>
 
@@ -136,14 +187,13 @@
     const GET_STOCK_URL = "https://default15ce9348be2a462b8fc0e1765a9b20.4a.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/06/workflows/2e7f68e486ed49089776e2a4f85a060c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6d-2YZse9YYLG2SBEzyduMA6c8QsLRFCbQlz-qN3hm4";
     const WEBHOOK_URL   = "https://default15ce9348be2a462b8fc0e1765a9b20.4a.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/02/workflows/c8c0da84652346de886d620ad479558b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ebUgotEAuITZ0dVNr8OJ7QhAmLnuVc6J2n9EAwJ6jNE";
 
-
     // ─── BUNDLE PROMO CONFIGURATION ──────────────────────────────────
     // Add as many independent item promotions as you want:
     const BUNDLE_CONFIGS = {
       "2ltee": {
         bundleQty: 3,
         bundlePrice: 30.00,
-        label: "Special Bundle: 3 for $30"
+        label: "Legacy Bundle: 3 for $30"
       },
       "26tee": {
         bundleQty: 3,
@@ -153,9 +203,9 @@
       // Add another item ID here whenever needed
     };
 
-    // Dynamic State
+    // State
     let CATALOG = [];
-    const cart = {};
+    const cart = {}; // Key format: `${itemId}-${size}`
 
     // 1. Fetch & Transform Excel Rows into Grouped Products
     async function fetchStoreCatalog() {
@@ -172,7 +222,6 @@
           return;
         }
 
-        // Group rows by item prefix (e.g., 'tee', 'rsinglet', 'vsinglet')
         const groups = {};
 
         rows.forEach(r => {
@@ -198,7 +247,6 @@
           groups[itemId].prices[size] = price;
         });
 
-        // Determine whether each item has multiple sizes or is Free Size
         CATALOG = Object.values(groups).map(item => {
           const sizeKeys = Object.keys(item.stocks);
           if (sizeKeys.length === 1 && (sizeKeys[0] === "Free Size" || sizeKeys[0] === "Standard")) {
@@ -208,6 +256,7 @@
         });
 
         renderCatalog();
+        syncCartWithLiveStock(); // Validate items already in cart against live stock
       } catch (err) {
         console.error("Store sync failed:", err);
         grid.innerHTML = `
@@ -220,7 +269,7 @@
       }
     }
 
-    // 2. Helpers for Stock & Price Queries
+    // Helpers
     function getAvailableStock(itemId, size) {
       const item = CATALOG.find(p => p.id === itemId);
       return (item && item.stocks && item.stocks[size] !== undefined) ? item.stocks[size] : 0;
@@ -243,61 +292,7 @@
       }
     }
 
-    // ─── CART CALCULATION & BUNDLE PROMO ENGINE ──────────────────────
-    function getCartBreakdown() {
-      let subtotal = 0;
-      let totalQty = 0;
-      const discounts = [];
-
-      // 1. Subtotal for all items
-      Object.values(cart).forEach(item => {
-        subtotal += item.price * item.quantity;
-        totalQty += item.quantity;
-      });
-
-      // 2. Evaluate each independent bundle rule
-      Object.entries(BUNDLE_CONFIGS).forEach(([targetItemId, deal]) => {
-        const matchingUnits = [];
-
-        // Collect units strictly for this specific item
-        Object.values(cart).forEach(item => {
-          if (item.id === targetItemId) {
-            for (let i = 0; i < item.quantity; i++) {
-              matchingUnits.push(item.price);
-            }
-          }
-        });
-
-        const bundlesEarned = Math.floor(matchingUnits.length / deal.bundleQty);
-
-        if (bundlesEarned > 0) {
-          // Sort descending so greatest savings calculate accurately if sizes vary
-          matchingUnits.sort((a, b) => b - a);
-
-          let totalSavingForDeal = 0;
-          for (let b = 0; b < bundlesEarned; b++) {
-            const slice = matchingUnits.slice(b * deal.bundleQty, (b + 1) * deal.bundleQty);
-            const regularCost = slice.reduce((sum, p) => sum + p, 0);
-            const saving = regularCost - deal.bundlePrice;
-            if (saving > 0) totalSavingForDeal += saving;
-          }
-
-          if (totalSavingForDeal > 0) {
-            discounts.push({
-              label: `${deal.label} (${bundlesEarned}x applied)`,
-              amount: totalSavingForDeal
-            });
-          }
-        }
-      });
-
-      const totalDiscount = discounts.reduce((sum, d) => sum + d.amount, 0);
-      const finalTotal = Math.max(0, subtotal - totalDiscount);
-
-      return { subtotal, totalQty, discounts, totalDiscount, finalTotal };
-    }
-
-    // 3. Render Catalog Cards
+    // 2. Render Catalog Cards
     function renderCatalog() {
       const grid = document.getElementById("catalog-grid");
       grid.innerHTML = "";
@@ -322,10 +317,10 @@
                 <div>
                   <h3 class="font-bold text-slate-900">${item.name}</h3>
                   ${BUNDLE_CONFIGS[item.id] ? `
-                  <span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">
-                    ${BUNDLE_CONFIGS[item.id].label}
-                  </span>
-                ` : ''}
+                    <span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">
+                      ${BUNDLE_CONFIGS[item.id].label}
+                    </span>
+                  ` : ''}
                 </div>
                 <span id="price-display-${item.id}" class="font-bold text-slate-900 shrink-0">$${initialPrice.toFixed(2)}</span>
               </div>
@@ -333,8 +328,8 @@
             </div>
           </div>
 
-          <div class="p-4 pt-0">
-            <div class="mb-3">
+          <div class="p-4 pt-0 space-y-3">
+            <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="text-xs font-semibold text-slate-500 uppercase">${item.hasSize ? 'Select Size' : 'Stock'}</label>
                 <div id="stock-badge-${item.id}">
@@ -348,67 +343,132 @@
                     const sStock = item.stocks[s];
                     const sPrice = item.prices[s] !== undefined ? item.prices[s] : initialPrice;
                     const label = sStock === 0 ? `${s} (Sold Out - $${sPrice.toFixed(2)})` : `${s} ($${sPrice.toFixed(2)} • ${sStock} left)`;
-                    return `<option value="${s}">${label}</option>`;
+                    return `<option value="${s}" ${sStock === 0 ? 'disabled' : ''}>${label}</option>`;
                   }).join("")}
                 </select>
               ` : ''}
             </div>
 
-            <div class="flex items-center gap-2">
-              <button id="dec-btn-${item.id}" onclick="updateCart('${item.id}', -1)" class="w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">-</button>
-              <span id="qty-${item.id}" class="flex-1 text-center font-bold text-sm text-slate-800">0</span>
-              <button id="inc-btn-${item.id}" onclick="updateCart('${item.id}', 1)" class="w-9 h-9 flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition">+</button>
-            </div>
+            <!-- Add to Cart Button -->
+            <button id="add-btn-${item.id}" onclick="addToCart('${item.id}')" ${initialStock === 0 ? 'disabled' : ''} class="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-xs">
+              <span>+ Add to Cart</span>
+            </button>
           </div>
         `;
         grid.appendChild(card);
-        refreshCardControls(item.id, defaultSize);
       });
     }
 
-    // 4. Size & Controls Sync
     function handleSizeChange(itemId) {
       const sizeEl = document.getElementById(`size-${itemId}`);
       const selectedSize = sizeEl ? sizeEl.value : "Free Size";
-      
-      const currentPrice = getItemPrice(itemId, selectedSize);
+      const stock = getAvailableStock(itemId, selectedSize);
+
       const priceDisplay = document.getElementById(`price-display-${itemId}`);
-      if (priceDisplay) priceDisplay.innerText = `$${currentPrice.toFixed(2)}`;
+      if (priceDisplay) priceDisplay.innerText = `$${getItemPrice(itemId, selectedSize).toFixed(2)}`;
 
-      refreshCardControls(itemId, selectedSize);
-    }
+      const badge = document.getElementById(`stock-badge-${itemId}`);
+      if (badge) badge.innerHTML = renderStockBadge(stock);
 
-    function refreshCardControls(itemId, size) {
-      const stock = getAvailableStock(itemId, size);
-      const key = `${itemId}-${size}`;
-      const currentCartQty = cart[key] ? cart[key].quantity : 0;
-
-      const badgeContainer = document.getElementById(`stock-badge-${itemId}`);
-      if (badgeContainer) badgeContainer.innerHTML = renderStockBadge(stock);
-
-      const qtyEl = document.getElementById(`qty-${itemId}`);
-      if (qtyEl) qtyEl.innerText = currentCartQty;
-
-      const incBtn = document.getElementById(`inc-btn-${itemId}`);
-      if (incBtn) {
-        if (stock === 0 || currentCartQty >= stock) {
-          incBtn.disabled = true;
-          incBtn.className = "w-9 h-9 flex items-center justify-center bg-slate-100 text-slate-300 font-bold rounded-lg cursor-not-allowed";
-        } else {
-          incBtn.disabled = false;
-          incBtn.className = "w-9 h-9 flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition";
-        }
+      const addBtn = document.getElementById(`add-btn-${itemId}`);
+      if (addBtn) {
+        addBtn.disabled = stock === 0;
+        addBtn.innerText = stock === 0 ? "Sold Out" : "+ Add to Cart";
       }
     }
 
-    // 5. Cart Management
-    function updateCart(itemId, delta) {
+    // ─── CART CALCULATION & BUNDLE ENGINE ────────────────────────────
+    function getCartBreakdown() {
+      let subtotal = 0;
+      let totalQty = 0;
+      const discounts = [];
+
+      Object.values(cart).forEach(item => {
+        subtotal += item.price * item.quantity;
+        totalQty += item.quantity;
+      });
+
+      // Bundle Promo Calculations
+      Object.entries(BUNDLE_CONFIGS).forEach(([targetItemId, deal]) => {
+        const matchingUnits = [];
+        Object.values(cart).forEach(item => {
+          if (item.id === targetItemId) {
+            for (let i = 0; i < item.quantity; i++) matchingUnits.push(item.price);
+          }
+        });
+
+        const bundlesEarned = Math.floor(matchingUnits.length / deal.bundleQty);
+        if (bundlesEarned > 0) {
+          matchingUnits.sort((a, b) => b - a);
+          let totalSaving = 0;
+          for (let b = 0; b < bundlesEarned; b++) {
+            const slice = matchingUnits.slice(b * deal.bundleQty, (b + 1) * deal.bundleQty);
+            const regCost = slice.reduce((sum, p) => sum + p, 0);
+            const saving = regCost - deal.bundlePrice;
+            if (saving > 0) totalSaving += saving;
+          }
+
+          if (totalSaving > 0) {
+            discounts.push({
+              label: `${deal.label} (${bundlesEarned}x applied)`,
+              amount: totalSaving
+            });
+          }
+        }
+      });
+
+      const totalDiscount = discounts.reduce((sum, d) => sum + d.amount, 0);
+      const finalTotal = Math.max(0, subtotal - totalDiscount);
+
+      return { subtotal, totalQty, discounts, totalDiscount, finalTotal };
+    }
+
+    function recalculateTotals() {
+      const { totalQty, finalTotal, totalDiscount } = getCartBreakdown();
+      const formatted = `$${finalTotal.toFixed(2)}`;
+
+      document.getElementById("cart-badge").innerText = `${totalQty} item${totalQty === 1 ? '' : 's'} • ${formatted}`;
+      document.getElementById("btn-cart-count").innerText = totalQty;
+      document.getElementById("bottom-total").innerText = formatted;
+      document.getElementById("open-cart-btn").disabled = totalQty === 0;
+
+      const discountTag = document.getElementById("bottom-discount-tag");
+      if (totalDiscount > 0) {
+        discountTag.classList.remove("hidden");
+        discountTag.innerText = `Saved $${totalDiscount.toFixed(2)} with bundle!`;
+      } else {
+        discountTag.classList.add("hidden");
+      }
+    }
+
+    // ─── CART DRAWER INTERACTIONS ────────────────────────────────────
+    function openCartDrawer() {
+      renderCartDrawer();
+      document.getElementById("cart-drawer-overlay").classList.remove("hidden");
+      document.getElementById("cart-drawer").classList.remove("translate-x-full");
+    }
+
+    function closeCartDrawer() {
+      document.getElementById("cart-drawer-overlay").classList.add("hidden");
+      document.getElementById("cart-drawer").classList.add("translate-x-full");
+    }
+
+    // Add item to cart from catalog card
+    function addToCart(itemId) {
       const item = CATALOG.find(p => p.id === itemId);
+      if (!item) return;
+
       const sizeEl = document.getElementById(`size-${itemId}`);
       const selectedSize = sizeEl ? sizeEl.value : "Free Size";
-      const key = `${itemId}-${selectedSize}`;
       const stock = getAvailableStock(itemId, selectedSize);
       const unitPrice = getItemPrice(itemId, selectedSize);
+      const key = `${itemId}-${selectedSize}`;
+
+      const currentQty = cart[key] ? cart[key].quantity : 0;
+      if (currentQty + 1 > stock) {
+        alert(`Sorry, only ${stock} items available in size ${selectedSize}.`);
+        return;
+      }
 
       if (!cart[key]) {
         cart[key] = {
@@ -418,71 +478,228 @@
           price: unitPrice,
           size: selectedSize,
           quantity: 0,
-          currentStock: stock
+          currentStock: stock,
+          img: item.img
         };
       }
 
-      const newQty = cart[key].quantity + delta;
-      if (newQty > stock) {
-        alert(`Sorry, only ${stock} available for size ${selectedSize}.`);
+      cart[key].quantity += 1;
+      recalculateTotals();
+
+      // Quick visual feedback on button
+      const addBtn = document.getElementById(`add-btn-${itemId}`);
+      if (addBtn) {
+        const originalText = addBtn.innerHTML;
+        addBtn.innerHTML = `<span>✓ Added to Cart</span>`;
+        addBtn.className = addBtn.className.replace("bg-slate-900", "bg-emerald-600");
+        setTimeout(() => {
+          addBtn.innerHTML = originalText;
+          addBtn.className = addBtn.className.replace("bg-emerald-600", "bg-slate-900");
+        }, 800);
+      }
+    }
+
+    // Adjust Quantity (+ or -)
+    function updateCartQty(sku, delta) {
+      const cartItem = cart[sku];
+      if (!cartItem) return;
+
+      const newQty = cartItem.quantity + delta;
+      if (newQty > cartItem.currentStock) {
+        alert(`Only ${cartItem.currentStock} pieces available for size ${cartItem.size}.`);
         return;
       }
 
-      cart[key].quantity = newQty;
-      if (cart[key].quantity <= 0) delete cart[key];
+      if (newQty <= 0) {
+        delete cart[sku];
+      } else {
+        cartItem.quantity = newQty;
+      }
 
-      refreshCardControls(itemId, selectedSize);
+      recalculateTotals();
+      renderCartDrawer();
+    }
+
+    // Direct Removal (Trash button)
+    function removeCartItem(sku) {
+      delete cart[sku];
+      recalculateTotals();
+      renderCartDrawer();
+    }
+
+    // Dynamic Size Change inside the Cart Drawer
+    function changeCartItemSize(oldSku, newSize) {
+      const item = cart[oldSku];
+      if (!item || item.size === newSize) return;
+
+      const product = CATALOG.find(p => p.id === item.id);
+      if (!product) return;
+
+      const targetStock = product.stocks[newSize] || 0;
+      if (targetStock === 0) {
+        alert(`Sorry, size ${newSize} is currently sold out.`);
+        renderCartDrawer();
+        return;
+      }
+
+      const newSku = `${item.id}-${newSize}`;
+      const existingQtyInTargetSize = cart[newSku] ? cart[newSku].quantity : 0;
+      const desiredQty = item.quantity;
+      const finalQty = Math.min(targetStock, existingQtyInTargetSize + desiredQty);
+
+      if (existingQtyInTargetSize + desiredQty > targetStock) {
+        alert(`Stock limit reached: Size ${newSize} has ${targetStock} remaining. Quantity adjusted to ${finalQty}.`);
+      }
+
+      const newPrice = product.prices[newSize] !== undefined ? product.prices[newSize] : item.price;
+
+      // Remove the old size entry
+      delete cart[oldSku];
+
+      // Assign the new size entry
+      cart[newSku] = {
+        id: item.id,
+        sku: newSku,
+        name: product.name,
+        price: newPrice,
+        size: newSize,
+        quantity: finalQty,
+        currentStock: targetStock,
+        img: product.img
+      };
+
+      recalculateTotals();
+      renderCartDrawer();
+    }
+
+    // Render Cart Drawer Contents
+    function renderCartDrawer() {
+      const listContainer = document.getElementById("drawer-items-list");
+      const cartItems = Object.values(cart);
+      const { subtotal, discounts, finalTotal, totalQty } = getCartBreakdown();
+
+      document.getElementById("drawer-item-count").innerText = `${totalQty}`;
+      document.getElementById("drawer-subtotal").innerText = `$${subtotal.toFixed(2)}`;
+      document.getElementById("drawer-total").innerText = `$${finalTotal.toFixed(2)}`;
+      document.getElementById("drawer-checkout-btn").disabled = cartItems.length === 0;
+
+      // Discounts List
+      const discountsContainer = document.getElementById("drawer-discounts");
+      discountsContainer.innerHTML = discounts.map(d => `
+        <div class="flex justify-between">
+          <span>⚡ ${d.label}</span>
+          <span>-$${d.amount.toFixed(2)}</span>
+        </div>
+      `).join("");
+
+      if (cartItems.length === 0) {
+        listContainer.innerHTML = `
+          <div class="py-16 text-center text-slate-400">
+            <div class="text-4xl mb-2">🛍️</div>
+            <p class="font-bold text-slate-600 text-sm">Your cart is empty</p>
+            <p class="text-xs text-slate-400 mt-1">Looks like you haven't added any hall merch yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = cartItems.map(item => {
+        const product = CATALOG.find(p => p.id === item.id);
+        const availableSizes = product && product.hasSize ? Object.keys(product.stocks) : [];
+
+        return `
+          <div class="bg-white border border-slate-200 rounded-xl p-3 flex gap-3 items-center shadow-xs">
+            <img src="${item.img}" onerror="this.src='https://placehold.co/80x80?text=Merch'" class="w-16 h-16 rounded-lg object-cover bg-slate-100 shrink-0">
+            
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start gap-1">
+                <h4 class="font-bold text-xs text-slate-900 truncate">${item.name}</h4>
+                <button onclick="removeCartItem('${item.sku}')" title="Remove" class="text-slate-400 hover:text-rose-600 transition text-sm p-0.5">
+                  🗑️
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2 mt-1">
+                <!-- Size Selector inside Cart -->
+                ${availableSizes.length > 0 ? `
+                  <div class="flex items-center gap-1">
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase">Size:</span>
+                    <select onchange="changeCartItemSize('${item.sku}', this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 font-bold text-slate-700 outline-none">
+                      ${availableSizes.map(s => {
+                        const stock = product.stocks[s];
+                        return `<option value="${s}" ${s === item.size ? 'selected' : ''} ${stock === 0 ? 'disabled' : ''}>
+                          ${s} ${stock === 0 ? '(Out)' : ''}
+                        </option>`;
+                      }).join("")}
+                    </select>
+                  </div>
+                ` : `<span class="text-xs text-slate-500 font-medium">Free Size</span>`}
+                <span class="text-xs font-bold text-slate-900 ml-auto">$${(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+
+              <!-- Quantity Buttons -->
+              <div class="flex justify-between items-center mt-2.5 pt-2 border-t border-slate-100">
+                <span class="text-[11px] text-slate-400 font-mono">$${item.price.toFixed(2)} ea</span>
+                <div class="flex items-center gap-2">
+                  <button onclick="updateCartQty('${item.sku}', -1)" class="w-6 h-6 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold transition">-</button>
+                  <span class="font-mono text-xs font-bold w-5 text-center">${item.quantity}</span>
+                  <button onclick="updateCartQty('${item.sku}', 1)" class="w-6 h-6 flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-xs font-bold transition">+</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function syncCartWithLiveStock() {
+      Object.keys(cart).forEach(sku => {
+        const item = cart[sku];
+        const stock = getAvailableStock(item.id, item.size);
+        item.currentStock = stock;
+        if (stock === 0) {
+          delete cart[sku];
+        } else if (item.quantity > stock) {
+          item.quantity = stock;
+        }
+      });
       recalculateTotals();
     }
 
-    function recalculateTotals() {
-      const { totalQty, finalTotal, totalDiscount } = getCartBreakdown();
-      const formatted = `$${finalTotal.toFixed(2)}`;
-
-      document.getElementById("cart-badge").innerText = `${totalQty} item${totalQty === 1 ? '' : 's'} • ${formatted}`;
-      document.getElementById("bottom-total").innerText = formatted;
-      document.getElementById("open-modal-btn").disabled = totalQty === 0;
-
-      // Show bundle discount tag on sticky checkout bar if active
-      let discountBadge = document.getElementById("bottom-discount-tag");
-      if (totalDiscount > 0) {
-        if (!discountBadge) {
-          discountBadge = document.createElement("span");
-          discountBadge.id = "bottom-discount-tag";
-          discountBadge.className = "text-[11px] font-bold text-emerald-600 block";
-          document.getElementById("bottom-total").insertAdjacentElement("afterend", discountBadge);
-        }
-        discountBadge.innerText = `Saved $${totalDiscount.toFixed(2)} with bundle!`;
-      } else if (discountBadge) {
-        discountBadge.remove();
-      }
+    // ─── CHECKOUT MODAL ──────────────────────────────────────────────
+    function proceedToCheckoutFromCart() {
+      closeCartDrawer();
+      openCheckoutModal();
     }
 
-    // 6. Checkout & Form Submission
+    function backToCartFromCheckout() {
+      closeCheckoutModal();
+      openCartDrawer();
+    }
+
     function openCheckoutModal() {
       const summaryList = document.getElementById("modal-summary-items");
       summaryList.innerHTML = "";
-
       const { discounts, finalTotal } = getCartBreakdown();
 
-      // 1. Regular items
+      // Regular line items
       Object.values(cart).forEach(c => {
         const lineTotal = c.price * c.quantity;
         const line = document.createElement("div");
         line.className = "flex justify-between";
-        line.innerHTML = `<span>${c.quantity}x ${c.name} (${c.size})</span><span>$${lineTotal.toFixed(2)}</span>`;
+        line.innerHTML = `<span>${c.quantity}x ${c.name} (${c.size})</span><span class="font-mono">$${lineTotal.toFixed(2)}</span>`;
         summaryList.appendChild(line);
       });
 
-      // 2. Promotional discounts
+      // Discounts
       discounts.forEach(d => {
         const discLine = document.createElement("div");
         discLine.className = "flex justify-between text-emerald-600 font-semibold";
-        discLine.innerHTML = `<span>⚡ ${d.label}</span><span>-$${d.amount.toFixed(2)}</span>`;
+        discLine.innerHTML = `<span>⚡ ${d.label}</span><span class="font-mono">-$${d.amount.toFixed(2)}</span>`;
         summaryList.appendChild(discLine);
       });
 
-      // 3. Final total payable
       document.getElementById("modal-summary-total").innerText = `$${finalTotal.toFixed(2)}`;
 
       const roomInput = document.getElementById("res-room");
@@ -533,13 +750,12 @@
         const base64Data = await fileToBase64(proofFile);
         const orderId = `ORD-${Date.now().toString().slice(-6)}`;
         
-        // Calculate discounted total for Power Automate and Excel
         const { finalTotal, discounts } = getCartBreakdown();
         const totalAmount = finalTotal;
 
         let itemsSummary = Object.values(cart).map(c => `${c.quantity}x ${c.name} (${c.size})`).join(", ");
         if (discounts.length > 0) {
-          itemsSummary += ` [Promo Applied: -${discounts.map(d => `$${d.amount.toFixed(2)}`).join(", ")}]`;
+          itemsSummary += ` [Promo: -${discounts.map(d => `$${d.amount.toFixed(2)}`).join(", ")}]`;
         }
 
         const payload = {
